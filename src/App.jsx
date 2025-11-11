@@ -2,9 +2,12 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import Layout from './components/layout/Layout';
 import Dashboard from './pages/Dashboard';
-import Users from './pages/Users';
-import Posts from './pages/Posts';
-import Products from './pages/Products';
+import Listeleme from './pages/Listeleme';
+import Tanimlama from './pages/Tanimlama';
+import SiparisOnaylama from './pages/SiparisOnaylama';
+import KuralTanimlama from './pages/KuralTanimlama';
+import SiparisOlusturma from './pages/SiparisOlusturma';
+import UretimPlanlama from './pages/UretimPlanlama';
 
 const theme = createTheme({
   palette: {
@@ -28,9 +31,12 @@ function App() {
         <Layout>
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/users" element={<Users />} />
-            <Route path="/posts" element={<Posts />} />
-            <Route path="/products" element={<Products />} />
+            <Route path="/listeleme" element={<Listeleme />} />
+            <Route path="/tanimlama" element={<Tanimlama />} />
+            <Route path="/siparis-onaylama" element={<SiparisOnaylama />} />
+            <Route path="/kural-tanimlama" element={<KuralTanimlama />} />
+            <Route path="/siparis-olusturma" element={<SiparisOlusturma />} />
+            <Route path="/uretim-planlama" element={<UretimPlanlama />} />
           </Routes>
         </Layout>
       </BrowserRouter>
