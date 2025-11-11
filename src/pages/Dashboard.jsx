@@ -18,7 +18,7 @@ const Dashboard = () => {
       // Mavi yaka için direkt üretim planlama sayfasına yönlendir
       navigate('/uretim-planlama');
     }
-  }, [navigate]);
+  }, [navigate, selectedRole]);
 
   const patronStats = [
     {
@@ -64,12 +64,16 @@ const Dashboard = () => {
   };
 
   const handleRoleSelect = (role) => {
+    localStorage.setItem('userRole', role);
     setSelectedRole(role);
+    
+    // Custom event dispatch et ki Navbar yakalasın
+    window.dispatchEvent(new Event('storage'));
+    
     if (role === 'mavi-yaka') {
-      // Mavi yaka için direkt üretim planlama sayfasına yönlendir
       setTimeout(() => {
         navigate('/uretim-planlama');
-      }, 500);
+      }, 100);
     }
   };
 

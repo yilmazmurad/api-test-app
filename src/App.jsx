@@ -8,6 +8,7 @@ import SiparisOnaylama from './pages/SiparisOnaylama';
 import KuralTanimlama from './pages/KuralTanimlama';
 import SiparisOlusturma from './pages/SiparisOlusturma';
 import UretimPlanlama from './pages/UretimPlanlama';
+import SiparisPdf from './pages/SiparisPdf';
 
 const theme = createTheme({
   palette: {
@@ -37,6 +38,7 @@ function App() {
             <Route path="/kural-tanimlama" element={<KuralTanimlama />} />
             <Route path="/siparis-olusturma" element={<SiparisOlusturma />} />
             <Route path="/uretim-planlama" element={<UretimPlanlama />} />
+            <Route path="/siparis-pdf" element={<SiparisPdf />} />
           </Routes>
         </Layout>
       </BrowserRouter>

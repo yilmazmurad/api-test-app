@@ -1,4 +1,5 @@
-﻿import { AppBar, Toolbar, Typography, Button, Box, IconButton } from '@mui/material';
+﻿import { useState, useEffect } from 'react';
+import { AppBar, Toolbar, Typography, Button, Box, IconButton } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
 import ApiIcon from '@mui/icons-material/Api';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -8,11 +9,26 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 
 const Navbar = () => {
   const location = useLocation();
-  const userRole = localStorage.getItem('userRole');
+  const [userRole, setUserRole] = useState(localStorage.getItem('userRole'));
+
+  // localStorage değişikliklerini izle
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setUserRole(localStorage.getItem('userRole'));
+    };
+
+    // Storage event dinleyicisi ekle
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   const getNavItems = () => {
     const allItems = [
@@ -23,6 +39,7 @@ const Navbar = () => {
       { title: 'Kural Tanımlama', path: '/kural-tanimlama', icon: <SettingsIcon />, roles: ['beyaz-yaka'] },
       { title: 'Sipariş Oluşturma', path: '/siparis-olusturma', icon: <ShoppingCartIcon />, roles: ['beyaz-yaka'] },
       { title: 'Üretim Planlama', path: '/uretim-planlama', icon: <PrecisionManufacturingIcon />, roles: ['beyaz-yaka', 'mavi-yaka'] },
+      { title: 'Sipariş PDF', path: '/siparis-pdf', icon: <PictureAsPdfIcon />, roles: ['beyaz-yaka'] },
     ];
 
     // Rol varsa filtrele, yoksa hiç menü gösterme
