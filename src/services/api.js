@@ -1,9 +1,10 @@
 import axios from 'axios';
+import { showError, getErrorMessage } from '../utils/notifications';
 
 // Axios instance oluştur
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'https://jsonplaceholder.typicode.com',
-  timeout: 10000,
+  timeout: parseInt(import.meta.env.VITE_API_TIMEOUT) || 10000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -31,9 +32,21 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      // Token geçersizse localStorage'ı temizle
+      // Token geçersizse localStorage'ı temizle ve login sayfasına yönlendir
       localStorage.removeItem('token');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('user');
+      
+      // Login sayfasına yönlendir (eğer zaten login sayfasında değilse)
+      if (window.location.pathname !== '/') {
+        window.location.href = '/';
+      }
     }
+    
+    // Kullanıcıya hata mesajını göster
+    const errorMessage = getErrorMessage(error);
+    showError(errorMessage);
+    
     return Promise.reject(error);
   }
 );
@@ -41,9 +54,9 @@ api.interceptors.response.use(
 // CRUD fonksiyonları
 export const apiService = {
   // GET - Listeleme
-  getAll: async (endpoint) => {
+  getAll: async (endpoint, params = {}) => {
     try {
-      const response = await api.get(endpoint);
+      const response = await api.get(endpoint, { params });
       return response.data;
     } catch (error) {
       console.error('GET Error:', error);
@@ -80,6 +93,17 @@ export const apiService = {
       return response.data;
     } catch (error) {
       console.error('PUT Error:', error);
+      throw error;
+    }
+  },
+
+  // PATCH - Kısmi güncelleme
+  patch: async (endpoint, id, data) => {
+    try {
+      const response = await api.patch(`${endpoint}/${id}`, data);
+      return response.data;
+    } catch (error) {
+      console.error('PATCH Error:', error);
       throw error;
     }
   },

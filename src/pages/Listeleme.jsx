@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Box, Typography, Button, CircularProgress, Alert, Tabs, Tab } from '@mui/material';
+import { Box, Typography, Button, Alert, Tabs, Tab } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DataTable from '../components/common/DataTable';
 import FormDialog from '../components/common/FormDialog';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import StatusChip from '../components/common/StatusChip';
+import { TableSkeleton } from '../components/common/LoadingSkeleton';
 import { apiService } from '../services/api';
+import { siparisValidationSchema } from '../utils/validationSchemas';
+import { showSuccess, showError } from '../utils/notifications';
 
 const Listeleme = () => {
   const [tab, setTab] = useState(0);
@@ -15,13 +18,12 @@ const Listeleme = () => {
   const [openForm, setOpenForm] = useState(false);
   const [openConfirm, setOpenConfirm] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [formData, setFormData] = useState({
+  const [defaultFormValues, setDefaultFormValues] = useState({
     siparisNo: '',
     musteriAdi: '',
     urunTipi: '',
     olculer: '',
     fiyat: '',
-    durum: 'teklif',
   });
 
   const columns = [
@@ -49,7 +51,13 @@ const Listeleme = () => {
   const formFields = [
     { name: 'siparisNo', label: 'Sipariş No', required: true },
     { name: 'musteriAdi', label: 'Müşteri Adı', required: true },
-    { name: 'urunTipi', label: 'Ürün Tipi', required: true },
+    {
+      name: 'urunTipi',
+      label: 'Ürün Tipi',
+      required: true,
+      select: true,
+      options: ['Kapı', 'Pencere', 'Dolap', 'Panel'],
+    },
     { name: 'olculer', label: 'Ölçüler (örn: 100x200)', required: true },
     { name: 'fiyat', label: 'Fiyat', type: 'number', required: true },
   ];
@@ -61,6 +69,7 @@ const Listeleme = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true);
+      setError(null);
       // Gerçek API'de /siparisler endpoint'i kullanılacak
       const data = await apiService.getAll('/posts');
       // Demo veri dönüşümü
@@ -74,7 +83,7 @@ const Listeleme = () => {
         tarih: new Date(Date.now() - index * 86400000).toLocaleDateString('tr-TR'),
       }));
       setOrders(mappedData);
-      setError(null);
+      showSuccess('Siparişler başarıyla yüklendi');
     } catch (err) {
       setError('Siparişler yüklenirken hata oluştu');
       console.error(err);
@@ -85,19 +94,24 @@ const Listeleme = () => {
 
   const handleAdd = () => {
     setSelectedOrder(null);
-    setFormData({ siparisNo: '', musteriAdi: '', urunTipi: '', olculer: '', fiyat: '', durum: 'teklif' });
+    setDefaultFormValues({
+      siparisNo: '',
+      musteriAdi: '',
+      urunTipi: '',
+      olculer: '',
+      fiyat: '',
+    });
     setOpenForm(true);
   };
 
   const handleEdit = (order) => {
     setSelectedOrder(order);
-    setFormData({
+    setDefaultFormValues({
       siparisNo: order.id,
       musteriAdi: order.musteriAdi,
       urunTipi: order.urunTipi,
       olculer: order.olculer,
       fiyat: order.fiyat,
-      durum: order.durum,
     });
     setOpenForm(true);
   };
@@ -111,18 +125,22 @@ const Listeleme = () => {
     try {
       if (selectedOrder) {
         // Güncelleme
-        setOrders(orders.map((o) => (o.id === selectedOrder.id ? { ...o, ...data } : o)));
+        setOrders(orders.map((o) => (o.id === selectedOrder.id ? { ...o, ...data, id: selectedOrder.id } : o)));
+        showSuccess('Sipariş başarıyla güncellendi');
       } else {
         // Ekleme
         const newOrder = {
           id: `SIP-${Date.now()}`,
           ...data,
+          durum: 'teklif',
           tarih: new Date().toLocaleDateString('tr-TR'),
         };
         setOrders([newOrder, ...orders]);
+        showSuccess('Sipariş başarıyla oluşturuldu');
       }
       setOpenForm(false);
     } catch (err) {
+      showError('İşlem sırasında hata oluştu');
       console.error('Form submit error:', err);
     }
   };
@@ -130,8 +148,10 @@ const Listeleme = () => {
   const handleConfirmDelete = async () => {
     try {
       setOrders(orders.filter((o) => o.id !== selectedOrder.id));
+      showSuccess('Sipariş başarıyla silindi');
       setOpenConfirm(false);
     } catch (err) {
+      showError('Silme işlemi sırasında hata oluştu');
       console.error('Delete error:', err);
     }
   };
@@ -146,11 +166,7 @@ const Listeleme = () => {
   });
 
   if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
-      </Box>
-    );
+    return <TableSkeleton rows={10} columns={7} />;
   }
 
   return (
@@ -191,8 +207,8 @@ const Listeleme = () => {
         onSubmit={handleFormSubmit}
         title={selectedOrder ? 'Sipariş Düzenle' : 'Yeni Sipariş'}
         fields={formFields}
-        formData={formData}
-        setFormData={setFormData}
+        defaultValues={defaultFormValues}
+        validationSchema={siparisValidationSchema}
       />
 
       <ConfirmDialog
